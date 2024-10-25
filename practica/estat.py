@@ -5,7 +5,11 @@ from practica.joc import Accions
 
 
 class Estat:
-    moviments_possibles = [
+    moviments_possibles = [ # aquest ordre optimitza la cerca per profunditat
+        (Accions.POSAR_PARET, "S"),
+        (Accions.POSAR_PARET, "N"),
+        (Accions.POSAR_PARET, "E"),
+        (Accions.POSAR_PARET, "O"),
         (Accions.MOURE, "E"),
         (Accions.MOURE, "S"),
         (Accions.MOURE, "N"),
@@ -14,10 +18,6 @@ class Estat:
         (Accions.BOTAR, "N"),
         (Accions.BOTAR, "E"),
         (Accions.BOTAR, "O"),
-        (Accions.POSAR_PARET, "S"),
-        (Accions.POSAR_PARET, "N"),
-        (Accions.POSAR_PARET, "E"),
-        (Accions.POSAR_PARET, "O"),
     ]
 
     def __init__(self, nom_agent: str, parets: Set[Tuple[int, int]], midax: int, miday: int, desti: Tuple[int, int],agents: Dict[str, Tuple[int, int]],cami = []):
