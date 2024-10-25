@@ -78,10 +78,14 @@ class Estat:
                 return False
             if x == self._posicio[0] and y == self._posicio[1]: # l'agent es troba sobre una paret
                 return False
+            if x == self._desti[0] and y == self._desti[1]: # hi ha una paret sobre la meta
+                return False
 
         for nom, posicio in self._agents.items():
             if self._nom_agent != nom and self._posicio == posicio: # l'agent está damunt un altre
                 return False
+
+        return True
 
     def genera_fill(self) -> list:
         """ Mètode per generar els estats fills.
