@@ -1,5 +1,3 @@
-import random
-
 from practica import joc
 from practica.joc import Accions
 from practica.estat import Estat
