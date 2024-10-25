@@ -1,5 +1,5 @@
 import copy
-from typing import List, Tuple, Dict
+from typing import Tuple, Dict, Set
 
 from practica.joc import Accions
 
@@ -20,7 +20,7 @@ class Estat:
         (Accions.POSAR_PARET, "O"),
     ]
 
-    def __init__(self, nom_agent: str, parets: List[Tuple[int, int]], midax: int, miday: int, desti: Tuple[int, int],agents: Dict[str, Tuple[int, int]],cami = []):
+    def __init__(self, nom_agent: str, parets: Set[Tuple[int, int]], midax: int, miday: int, desti: Tuple[int, int],agents: Dict[str, Tuple[int, int]],cami = []):
         self._nom_agent = nom_agent
         self._parets = parets
         self._rangx = midax
@@ -29,6 +29,7 @@ class Estat:
         self._agents = agents
         self._posicio = self._agents[self._nom_agent]
         self.cami = cami
+        self._invalid = False
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -69,7 +70,7 @@ class Estat:
         if self._posicio[0] >= self._rangx or self._posicio[1] >= self._rangy: #está fora del taulell
             return False
 
-        if len(self._parets) != len(set(self._parets)): # hi ha parets duplicades
+        if self._invalid: # hi ha parets duplicades, s'actualitza en crear l'estat
             return False
 
         for x, y in self._parets:
@@ -121,11 +122,17 @@ class Estat:
 
             # Fer canvis
             if moviment[0] == Accions.POSAR_PARET:
-                nou_estat.parets.append((x, y))
+                if (x, y) in nou_estat._parets:
+                    self._invalid = True
+                else:
+                    nou_estat._parets.add((x, y))
+
             elif moviment[0] in (Accions.MOURE, Accions.BOTAR):
                 nou_estat._posicio = (x, y)
                 nou_estat._agents[nou_estat._nom_agent] = (x, y)
 
+            print("Acció: " + str(moviment) + "\n")
+            print("Nou estat: " + str(nou_estat) + "\n")
             if nou_estat.es_valid():
                 estats_generats.append(nou_estat)
 
