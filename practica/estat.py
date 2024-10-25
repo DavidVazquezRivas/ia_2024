@@ -127,7 +127,7 @@ class Estat:
             # Fer canvis
             if moviment[0] == Accions.POSAR_PARET:
                 if (x, y) in nou_estat._parets:
-                    self._invalid = True
+                    nou_estat._invalid = True
                 else:
                     nou_estat._parets.add((x, y))
 
