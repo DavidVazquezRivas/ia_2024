@@ -135,8 +135,6 @@ class Estat:
                 nou_estat._posicio = (x, y)
                 nou_estat._agents[nou_estat._nom_agent] = (x, y)
 
-            print("Acció: " + str(moviment) + "\n")
-            print("Nou estat: " + str(nou_estat) + "\n")
             if nou_estat.es_valid():
                 estats_generats.append(nou_estat)
 
