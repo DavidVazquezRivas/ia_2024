@@ -54,6 +54,7 @@ class Estat:
                 f"Parets: {self._parets}\n"
                 f"Agents: {self._agents}\n"
                 f"Camí: {self.cami}\n"
+                f"Valor: {(self.heuristica() + self.cost())}"
                 )
 
     def es_desti(self) -> bool:
@@ -139,3 +140,29 @@ class Estat:
                 estats_generats.append(nou_estat)
 
         return estats_generats
+
+    def __lt__(self, other):
+        self_valor = self.heuristica() + self.cost()
+        other_valor = other.heuristica() + self.cost()
+        if self_valor == other_valor:
+            return self.heuristica() < other.heuristica()
+
+        return self_valor < other_valor
+
+    def heuristica(self) -> int:
+        # L'heuristica definida serà la distancia entre l'agent i el destí
+        # L'heuristica és acceptable, garantint trobar la solució òptima per A*
+        return abs(self._posicio[0] - self._desti[0]) + abs(self._posicio[1] - self._desti[1])
+
+    def cost(self) -> int:
+        cost_accions = {
+            Accions.ESPERAR: 0, # per si de cas
+            Accions.MOURE: 1,
+            Accions.BOTAR: 2,
+            Accions.POSAR_PARET: 4,
+        }
+        cost = 0
+        for accio,direccio in self.cami:
+            cost += cost_accions[accio]
+
+        return cost
