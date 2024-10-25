@@ -67,14 +67,14 @@ class Estat:
         Returns:
             Booleà indicant si es vàlid o no
         """
-        if self._posicio[0] >= self._rangx or self._posicio[1] >= self._rangy: #está fora del taulell
+        if self._posicio[0] < 0 or self._posicio[0] >= self._rangx or self._posicio[1] < 0 or self._posicio[1] >= self._rangy: #está fora del taulell
             return False
 
         if self._invalid: # hi ha parets duplicades, s'actualitza en crear l'estat
             return False
 
         for x, y in self._parets:
-            if x >= self._rangx or y >= self._rangy: # hi ha parets fora de rang
+            if x < 0 or x >= self._rangx or y < 0 or y >= self._rangy: # hi ha parets fora de rang
                 return False
             if x == self._posicio[0] and y == self._posicio[1]: # l'agent es troba sobre una paret
                 return False
