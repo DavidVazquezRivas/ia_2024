@@ -28,7 +28,7 @@ class Estat:
         self._desti = desti
         self._agents = agents
         self._posicio = self._agents[self._nom_agent]
-        self._cami = cami
+        self.cami = cami
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -52,7 +52,7 @@ class Estat:
                 f"Destí: {self._desti}\n"
                 f"Parets: {self._parets}\n"
                 f"Agents: {self._agents}\n"
-                f"Camí: {self._cami}\n"
+                f"Camí: {self.cami}\n"
                 )
 
     def es_desti(self) -> bool:
