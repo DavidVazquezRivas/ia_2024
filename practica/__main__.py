@@ -1,12 +1,11 @@
-from practica import agent, joc
+from practica import agent, joc, agent_profunditat
 
 
 def main():
     mida = (6, 6)
 
     agents = [
-        agent.Viatger("Agent 1", mida_taulell=mida),
-        agent.Viatger("Agent 2", mida_taulell=mida),
+        agent_profunditat.ViatgerProdunditat("Agent 1", mida_taulell=mida)
     ]
 
     lab = joc.Laberint(agents, mida_taulell=mida)
