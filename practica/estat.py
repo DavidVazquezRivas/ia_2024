@@ -32,15 +32,7 @@ class Estat:
         self._invalid = False
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-
-
-        parets_igual = sorted(self._parets) == sorted(other._parets)
-        agents_igual = sorted((clau, valor) for clau, valor in self._agents.items()) == sorted(
-            (clau, valor) for clau, valor in other._agents.items())
-
-        return parets_igual and agents_igual
+        return hash(self) == hash(other)
 
     def __hash__(self):
         parets_hash = hash(tuple(self._parets))
