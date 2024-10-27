@@ -158,3 +158,12 @@ class Estat:
             cost += cost_accions[accio]
 
         return cost
+
+    def posicio_agents(self):
+        return self._agents
+
+    def posicio_desti(self):
+        return self._desti
+
+    def get_nom_agent(self):
+        return self._nom_agent
