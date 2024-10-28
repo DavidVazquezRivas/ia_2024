@@ -1,69 +1,73 @@
+from typing import Tuple
+
 from practica import joc
 from practica.joc import Accions
-from practica.estat import Estat
-
+from practica.estat_ma import Estat
 
 class ViatgerMinimax(joc.Viatger):
+    PODA = True
+
     def __init__(self, *args, **kwargs):
         super(ViatgerMinimax, self).__init__(*args, **kwargs)
-        self.__cami = None
-        self.__visitats = []
+        self.__visitats = None
+        self._profunditat_maxima = 2 # establim una profunditat máxima per tenir un cost raonable
 
-    def evaluar(self,estat: Estat):
-        posicions_agents: dict = estat.posicio_agents()
-        posicio_desti: tuple[int, int] = estat.posicio_desti()
-        x_1 = posicions_agents["Agent 1"][0]
-        y_1 = posicions_agents["Agent 1"][1]
-        distancia_un = abs(posicio_desti[0] - x_1) + abs(posicio_desti[1] - y_1)
-        x_2 = posicions_agents["Agent 2"][0]
-        y_2 = posicions_agents["Agent 2"][1]
-        distancia_dos = abs(posicio_desti[0] - x_2) + abs(posicio_desti[1] - y_2)
-        if estat.get_nom_agent() == "Agent 1":
-            return distancia_dos - distancia_un
-        return distancia_un - distancia_dos
 
-    def minimax(self, estat: Estat, alpha, beta, profunditat, torn_max=True):
-        if profunditat == 0 or estat.es_desti():
-            return estat, self.evaluar(estat)
-        if torn_max:
-            max_puntuacio = -float('inf')
-            estat_return = estat
-            for fill in estat.genera_fill():
+    def pinta(self, display):
+        pass
 
-                puntuacio = self.minimax(fill, alpha, beta, profunditat-1, False)
-                max_puntuacio = max(max_puntuacio, puntuacio[1])
-                if max_puntuacio == puntuacio[1]:
-                    estat_return = puntuacio[0]
-                alpha = max(alpha, puntuacio[1])
-                if beta <= alpha:
-                    break
-            return estat_return,max_puntuacio
+    def avaluar(self, estat: Estat, torn_max: bool, profunditat: int):
+        if estat.es_desti():
+            return estat, (float("inf") if not torn_max else float("-inf"))
+        elif profunditat >= self._profunditat_maxima:
+            return estat, estat.diferencia()
         else:
-            min_puntuacio = float('inf')
-            estat_return = estat
-            for fill in estat.genera_fill():
+            return None
 
-                puntuacio = self.minimax(fill, alpha, beta, profunditat-1, True)
-                min_puntuacio = min(min_puntuacio, puntuacio[1])
-                if puntuacio[1]==min_puntuacio:
-                    estat_return = puntuacio[0]
-                beta = min(beta,puntuacio[1])
-                if beta <= alpha:
-                    break
-            return estat_return,min_puntuacio
+
+    def cerca(self, estat: Estat, torn_max=True, alfa=-float("inf"), beta=float("inf"), profunditat=0) -> Tuple[Estat, float]:
+
+        avaluacio = self.avaluar(estat, torn_max, profunditat)
+        if avaluacio is not None:
+            return avaluacio
+
+        puntuacio_fills = []
+
+        for fill in estat.genera_fill():
+            if fill not in self.__visitats:
+                punt_fill = self.cerca(fill, not torn_max, alfa, beta, profunditat + 1)
+
+                if ViatgerMinimax.PODA:
+                    if torn_max:
+                        alfa = max(alfa, punt_fill[1])
+                    else:
+                        beta = min(beta, punt_fill[1])
+
+                    if alfa > beta:
+                        break
+
+                self.__visitats[fill] = punt_fill
+            puntuacio_fills.append(self.__visitats[fill])
+
+        puntuacio_fills = sorted(puntuacio_fills, key=lambda x: x[1])
+        if not torn_max:
+            return puntuacio_fills[0]
+        else:
+            return puntuacio_fills[-1]
 
     def actua(self, percepcio: dict) -> Accions | tuple[Accions, str]:
-        self.__visitats = dict()
         estat_inicial = Estat(
-                nom_agent=self.nom,
-                parets=percepcio['PARETS'],
-                midax=len(percepcio['TAULELL']),
-                miday=len(percepcio['TAULELL'][0]),
-                desti=percepcio['DESTI'],
-                agents=percepcio['AGENTS'],
-            )
-        if estat_inicial.es_desti():
+            nom_agent=self.nom,
+            parets=percepcio['PARETS'],
+            midax=len(percepcio['TAULELL']),
+            miday=len(percepcio['TAULELL'][0]),
+            desti=percepcio['DESTI'],
+            agents=percepcio['AGENTS'],
+        )
+
+        self.__visitats = dict()
+        res = self.cerca(estat_inicial, True, -float("inf"), float("inf"), 0)
+        if len(res[0].cami(self.nom)) > 0:
+            return res[0].cami(self.nom)[0]
+        else:
             return Accions.ESPERAR
-        accio:tuple[Estat,int] = self.minimax(estat_inicial,-float('inf'),float('inf'), 2)
-        res = accio[0].cami[0]
-        return res
