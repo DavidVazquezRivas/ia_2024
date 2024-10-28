@@ -20,8 +20,7 @@ class ViatgerProdunditat(joc.Viatger):
 
         self.__per_visitar.append(estat_inicial)
         while self.__per_visitar:
-            estat_actual = self.__per_visitar.pop(-1) #cambiar para que sea profunditat y no amplitud
-            print(estat_actual)
+            estat_actual = self.__per_visitar.pop(-1)
             if estat_actual in self.__visitats:
                 continue
             if estat_actual.es_desti():

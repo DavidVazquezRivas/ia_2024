@@ -22,7 +22,6 @@ class ViatgerInformat(joc.Viatger):
         self.__per_visitar.put(estat_inicial)
         while not self.__per_visitar.empty():
             estat_actual = self.__per_visitar.get()
-            print(estat_actual)
             if estat_actual in self.__visitats:
                 continue
             if estat_actual.es_desti():
