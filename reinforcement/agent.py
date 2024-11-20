@@ -221,43 +221,39 @@ class AgentQ(AbstractModel):
         for episode in range(1, episodes + 1):
 
             state = self.environment.reset()
+            # choose action epsilon greedy
+            if np.random.random() < exploration_rate:
+                action = random.choice(self.environment.actions)
+            else:
+                action = self.predict(state)
 
             while True:
-                # choose action epsilon greedy
-                if np.random.random() < exploration_rate:
-                    action = random.choice(self.environment.actions)
-                else:
-                    action = self.predict(state)
-
                 next_state, reward, status = self.environment._aplica(action)
                 cumulative_reward += reward
 
-                if (
-                        state,
-                        action,
-                ) not in self.Q.keys():  # ensure value exists for (state, action)
+                if (state, action,) not in self.Q.keys():  # ensure value exists for (state, action)
                     # to avoid a KeyError
                     self.Q[(state, action)] = 0.0
 
-                # FORA POLÍTICA!
-                max_next_Q = 0
-                for a in self.environment.actions:
-                    if (next_state, a) in self.Q and self.Q[
-                        (next_state, a)
-                    ] > max_next_Q:
-                        max_next_Q = self.Q[(next_state, a)]
+                    # choose action epsilon greedy
+                if np.random.random() < exploration_rate:
+                    next_action = random.choice(self.environment.actions)
+                else:
+                    next_action = self.predict(next_state)
+
+                # SARSA
+                next_Q = 0
+                if (next_state, next_action) in self.Q.keys():
+                    next_Q = self.Q[(next_state, next_action)]
 
                 self.Q[(state, action)] = self.Q[(state, action)] + learning_rate * (
-                        reward + discount * max_next_Q - self.Q[(state, action)]
-                )
+                            reward + discount * next_Q - self.Q[(state, action)])
 
-                if status in (
-                        Status.WIN,
-                        Status.LOSE,
-                ):  # terminal state reached, stop episode
+                if status in (Status.WIN, Status.LOSE):  # terminal state reached, stop episode
                     break
 
                 state = next_state
+                action = next_action
 
             cumulative_reward_history.append(cumulative_reward)
 
@@ -279,4 +275,4 @@ class AgentQ(AbstractModel):
 
         logging.info("episodes: {:d}".format(episode))
 
-        return cumulative_reward_history, win_history, episode
+        return cumulative_reward_history, win_history,episode
