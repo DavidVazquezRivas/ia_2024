@@ -229,7 +229,7 @@ class AgentQ(AbstractModel):
         # training starts here
         for episode in range(1, episodes + 1):
 
-            state = self.environment.reset()
+            state = self.environment.reset(self.get_random_position())
             # choose action epsilon greedy
             if np.random.random() < exploration_rate:
                 action = random.choice(self.environment.actions)
