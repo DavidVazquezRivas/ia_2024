@@ -53,7 +53,7 @@ class DataAnalyzer:
                 return i
 
         # No s'ha trobat convergència
-        return -1
+        return len(reward_history)
 
     @staticmethod
     def calculate_reward_history(reward_cumulative_history: List[float]) -> List[float]:
