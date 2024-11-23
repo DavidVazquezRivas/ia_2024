@@ -195,7 +195,102 @@ class AgentQ(AbstractModel):
                 break
         return pos_y, pos_x
 
-    def train(
+    def train_qlearning(
+            self,
+            discount,
+            exploration_rate,
+            learning_rate,
+            episodes,
+            stop_at_convergence=False,
+    ):
+        """ Train the model
+
+        Args:
+            stop_at_convergence: stop training as soon as convergence is reached.
+
+        Hyperparameters:
+            discount (float): (gamma) preference for future rewards (0 = not at all, 1 = only)
+            exploration_rate (float): exploration rate reduction after each random step
+                                (<= 1, 1 = no at all)
+            learning_rate (float): preference for using new knowledge (0 = not at all, 1 = only)
+            episodes (int): number of training games to play
+
+        Returns:
+            Int, datetime: number of training episodes, total time spent
+        """
+
+        # variables for reporting purposes
+        cumulative_reward = 0
+        cumulative_reward_history = []
+        win_history = []
+
+        # start_time = datetime.now()
+
+        # training starts here
+        for episode in range(1, episodes + 1):
+
+            state = self.environment.reset(self.get_random_position())
+
+            while True:
+                # choose action epsilon greedy
+                if np.random.random() < exploration_rate:
+                    action = random.choice(self.environment.actions)
+                else:
+                    action = self.predict(state)
+
+                next_state, reward, status = self.environment._aplica(action)
+                cumulative_reward += reward
+
+                if (
+                        state,
+                        action,
+                ) not in self.Q.keys():  # ensure value exists for (state, action)
+                    # to avoid a KeyError
+                    self.Q[(state, action)] = 0.0
+
+                # FORA POLÍTICA!
+                max_next_Q = 0
+                for a in self.environment.actions:
+                    if (next_state, a) in self.Q and self.Q[
+                        (next_state, a)
+                    ] > max_next_Q:
+                        max_next_Q = self.Q[(next_state, a)]
+
+                self.Q[(state, action)] = self.Q[(state, action)] + learning_rate * (
+                        reward + discount * max_next_Q - self.Q[(state, action)]
+                )
+
+                if status in (
+                        Status.WIN,
+                        Status.LOSE,
+                ):  # terminal state reached, stop episode
+                    break
+
+                state = next_state
+
+            cumulative_reward_history.append(cumulative_reward)
+
+            logging.info(
+                "episode: {:d}/{:d} | status: {:4s} | e: {:.5f}".format(
+                    episode, episodes, status.name, exploration_rate
+                )
+            )
+        """
+            if episode % check_convergence_every == 0:
+                # check if the current model does win from all starting cells
+                # only possible if there is a finite number of starting states
+                w_all, win_rate = self.environment.check_win_all(self)
+                win_history.append((episode, win_rate))
+                if w_all is True and stop_at_convergence is True:
+                    logging.info("won from all start cells, stop learning")
+                    break
+        """
+
+        logging.info("episodes: {:d}".format(episode))
+
+        return cumulative_reward_history, win_history, episode
+
+    def train_sarsa(
             self,
             discount,
             exploration_rate,
