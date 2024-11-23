@@ -186,6 +186,15 @@ class AgentQ(AbstractModel):
         }
         return action_mapping.get(action, '?')  # '?' for undefined actions
 
+    def get_random_position(self) -> tuple[int, int]:
+        laberint = self.environment.maze
+        while True:
+            pos_x = random.randint(0, len(laberint) - 1)
+            pos_y = random.randint(0, len(laberint[0]) - 1)
+            if laberint[pos_x][pos_y] == 0:
+                break
+        return pos_y, pos_x
+
     def train(
             self,
             discount,
