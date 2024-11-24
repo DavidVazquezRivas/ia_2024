@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import Tuple
 
 import numpy as np
 
@@ -18,9 +19,7 @@ class AgentQ(AbstractModel):
     or earlier if a stopping criterion is reached (here: a 100% win rate).
     """
 
-    default_check_convergence_every = (
-        5  # by default check for convergence every # episodes
-    )
+    default_check_convergence_every = 5  # by default check for convergence every # episodes
 
     def __init__(self, game, **kwargs):
         """Create a new prediction model for 'game'.
@@ -187,13 +186,32 @@ class AgentQ(AbstractModel):
         return action_mapping.get(action, '?')  # '?' for undefined actions
 
     def get_random_position(self) -> tuple[int, int]:
-        laberint = self.environment.maze
+        maze = self.environment.maze
         while True:
-            pos_x = random.randint(0, len(laberint) - 1)
-            pos_y = random.randint(0, len(laberint[0]) - 1)
-            if laberint[pos_x][pos_y] == 0:
+            pos_x = random.randint(0, len(maze) - 1)
+            pos_y = random.randint(0, len(maze[0]) - 1)
+            if maze[pos_x][pos_y] == 0:
                 break
         return pos_y, pos_x
+
+    def check_win_all(self) -> Tuple[bool, float]:
+        initial_states = 0
+        winning_initial_states = 0
+        for i in range(len(self.environment.maze)):
+            for j in range(len(self.environment.maze[i])):
+                if self.environment.maze[i][j] == 0:
+                    state = self.environment.reset(self.get_random_position())
+                    initial_states += 1
+                    while True:
+                        action = self.predict(state)
+                        next_state, reward, status = self.environment._aplica(action)
+                        if status in (Status.WIN, Status.LOSE,):  # terminal state reached, stop episode
+                            if status is Status.WIN: winning_initial_states += 1
+                            break
+                        state = next_state
+
+
+        return initial_states == winning_initial_states, winning_initial_states / initial_states
 
     def train_qlearning(
             self,
@@ -275,16 +293,16 @@ class AgentQ(AbstractModel):
                     episode, episodes, status.name, exploration_rate
                 )
             )
-        """
-            if episode % check_convergence_every == 0:
+
+            if episode % self.default_check_convergence_every == 0:
                 # check if the current model does win from all starting cells
                 # only possible if there is a finite number of starting states
-                w_all, win_rate = self.environment.check_win_all(self)
+                w_all, win_rate = self.check_win_all()
                 win_history.append((episode, win_rate))
                 if w_all is True and stop_at_convergence is True:
                     logging.info("won from all start cells, stop learning")
                     break
-        """
+
 
         logging.info("episodes: {:d}".format(episode))
 
@@ -366,16 +384,15 @@ class AgentQ(AbstractModel):
                     episode, episodes, status.name, exploration_rate
                 )
             )
-        """
-            if episode % check_convergence_every == 0:
+
+            if episode % self.default_check_convergence_every == 0:
                 # check if the current model does win from all starting cells
                 # only possible if there is a finite number of starting states
-                w_all, win_rate = self.environment.check_win_all(self)
+                w_all, win_rate = self.check_win_all()
                 win_history.append((episode, win_rate))
                 if w_all is True and stop_at_convergence is True:
                     logging.info("won from all start cells, stop learning")
                     break
-        """
 
         logging.info("episodes: {:d}".format(episode))
 
