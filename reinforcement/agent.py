@@ -20,7 +20,6 @@ class AgentQ(AbstractModel):
     """
 
     default_check_convergence_every = 5  # by default check for convergence every # episodes
-    valid_pos = []
 
     def __init__(self, game, **kwargs):
         """Create a new prediction model for 'game'.
@@ -31,6 +30,8 @@ class AgentQ(AbstractModel):
         """
         super().__init__(game, name="QTableModel")
         self.Q = {}  # table with value for (state, action) combination
+        self.valid_pos = []
+        self.check_convergence_every = self.default_check_convergence_every
 
     def q(self, state):
         """Get q values for all actions for a certain state."""
@@ -307,7 +308,7 @@ class AgentQ(AbstractModel):
                 )
             )
 
-            if episode % self.default_check_convergence_every == 0:
+            if episode % self.check_convergence_every == 0:
                 # check if the current model does win from all starting cells
                 # only possible if there is a finite number of starting states
                 w_all, win_rate = self.check_win_all()
@@ -398,7 +399,7 @@ class AgentQ(AbstractModel):
                 )
             )
 
-            if episode % self.default_check_convergence_every == 0:
+            if episode % self.check_convergence_every == 0:
                 # check if the current model does win from all starting cells
                 # only possible if there is a finite number of starting states
                 w_all, win_rate = self.check_win_all()
