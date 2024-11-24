@@ -20,6 +20,7 @@ class AgentQ(AbstractModel):
     """
 
     default_check_convergence_every = 5  # by default check for convergence every # episodes
+    valid_pos = []
 
     def __init__(self, game, **kwargs):
         """Create a new prediction model for 'game'.
@@ -186,6 +187,8 @@ class AgentQ(AbstractModel):
         return action_mapping.get(action, '?')  # '?' for undefined actions
 
     def get_random_position(self) -> tuple[int, int]:
+
+        """
         maze = self.environment.maze
         while True:
             pos_x = random.randint(0, len(maze) - 1)
@@ -193,6 +196,16 @@ class AgentQ(AbstractModel):
             if maze[pos_x][pos_y] == 0:
                 break
         return pos_y, pos_x
+        """
+
+        if len(self.valid_pos) == 0:
+            for i in range(len(self.environment.maze)):
+                for j in range(len(self.environment.maze[i])):
+                    if self.environment.maze[i][j] == 0:
+                        self.valid_pos.append((i, j))
+                    
+        return random.choice(self.valid_pos)
+
 
     def check_win_all(self) -> Tuple[bool, float]:
         initial_states = 0
